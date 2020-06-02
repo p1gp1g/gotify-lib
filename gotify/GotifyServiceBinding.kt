@@ -41,10 +41,6 @@ open class GotifyServiceBinding : Activity() {
             when (msg.what) {
                 MSG_START -> logi("Received MSG_START from service")
                 MSG_REGISTER_CLIENT -> {
-
-                }
-                MSG_UNREGISTER_CLIENT -> logi("App is unregistered")
-                MSG_GET_INFO -> {
                     if(waitingForInfo) {
                         registerGotify(msg.sendingUid)
                         TOKEN = msg.data?.getString("token").toString()
@@ -53,6 +49,7 @@ open class GotifyServiceBinding : Activity() {
                         logi("new url: $URL")
                     }
                 }
+                MSG_UNREGISTER_CLIENT -> logi("App is unregistered")
                 else -> super.handleMessage(msg)
             }
         }
@@ -127,45 +124,10 @@ open class GotifyServiceBinding : Activity() {
                 MSG_REGISTER_CLIENT, 0, 0)
             msg.replyTo = gMessenger
             msg.data = bundleOf("package" to packageName, "service" to serviceName)
-            gService!!.send(msg)
-        } catch (e: RemoteException) {
-            // There is nothing special we need to do if the service
-            // has crashed.
-        }
-    }
-
-    fun getInfo(){
-        logi("Asking url and token to gotify")
-        if(!gIsBound){
-            logw("You need to bind fisrt")
-            return
-        }
-        try {
-            val msg = Message.obtain(null,
-                MSG_GET_INFO, 0, 0)
-            msg.data = bundleOf("package" to packageName)
-            msg.replyTo = gMessenger
             waitingForInfo = true
             gService!!.send(msg)
         } catch (e: RemoteException) {
             waitingForInfo = false
-            // There is nothing special we need to do if the service
-            // has crashed.
-        }
-    }
-
-    fun isRegistered(){
-        if(!gIsBound){
-            logw("You need to bind fisrt")
-            return
-        }
-        try {
-            val msg = Message.obtain(null,
-                MSG_IS_REGISTERED, 0, 0)
-            msg.data = bundleOf("package" to packageName)
-            msg.replyTo = gMessenger
-            gService!!.send(msg)
-        } catch (e: RemoteException) {
             // There is nothing special we need to do if the service
             // has crashed.
         }
